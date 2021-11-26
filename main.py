@@ -39,7 +39,7 @@ if __name__ == '__main__':
     load_or_create_the_index()
     print('files was loaded')
     while True:
-        index_res = Query().start()
+        index_res = Query().best_search()
         origin_res = [ORIGIN_DATA[i] for i in index_res]
         print([i['title']for i in origin_res])
-        
+

@@ -21,23 +21,20 @@ def iter_sub_array(arr, size):
 
 class Query:
 
-    def start(self, query_text=None):
+    def __init__(self, query_text=None):
         if query_text is None:
             query_text = input()
 
         list_of_words = query_text.strip().split()
-        if len(list_of_words) == 0:
-            return []
-        query_tokens = [Token(doc_id=-1, word=word, posting=i) for i, word in enumerate(list_of_words)]
-        result = self.search(query_tokens)
-        return result
+        self.query_text = query_text
+        self.query_tokens = [Token(doc_id=-1, word=word, posting=i) for i, word in enumerate(list_of_words)]
 
-    def search(self, query_tokens: List[Token]) -> List[int]:
+    def full_search(self, ) -> List[int]:
         all_results = []
 
-        all_results += list(self._best_search(query_tokens).keys())
+        all_results += self.best_search()
 
-        all_results += self._sub_search(query_tokens)
+        all_results += self.sub_search()
 
         new_res = self.unique_results_with_order(all_results)
 
@@ -52,7 +49,7 @@ class Query:
                 temp.add(item)
         return new_res
 
-    def _best_search(self, query_tokens: List[Token]) -> PostingsList:
+    def _complete_combination_search(self, query_tokens: List[Token]) -> PostingsList:
 
         def merge(postings_list1, postings_list2, pos_diff) -> PostingsList:
             merged_result = PostingsList()
@@ -84,13 +81,16 @@ class Query:
 
         return merged_result
 
-    def _sub_search(self, query_tokens: List[Token]):
+    def sub_search(self):
+        query_tokens = self.query_tokens
+        query_tokens: List[Token]
+
         results = []
         for i in range(1, len(query_tokens)):
             items = list(iter_sub_array(query_tokens, i))
             setlist = []
             for query in items:
-                doc_ids = set(self._best_search(query).keys())
+                doc_ids = set(self._complete_combination_search(query).keys())
                 setlist.append(doc_ids)
             new_res = set.intersection(*setlist)
             results += new_res
@@ -99,3 +99,9 @@ class Query:
             results += new_res
 
         return results
+
+    def best_search(self):
+        query_tokens = self.query_tokens
+        query_tokens: List[Token]
+
+        return list(self._complete_combination_search(query_tokens).keys())
