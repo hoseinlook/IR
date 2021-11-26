@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import List
 import math
 from preprocess import Token
-from index import InvertedIndex, PostingsList, Postings
+from reverse_index import InvertedIndex, PostingsList, Postings
 
 
 def iter_sub_array(arr, size):

@@ -29,7 +29,8 @@ class InvertedIndex:
 
     @classmethod
     def get_postings_list(cls, word) -> PostingsList:
-        return cls._index_dict.get(word)
+        item = cls._index_dict.get(word)
+        return item if item is not None else PostingsList()
 
     @classmethod
     def insert_doc_tokens(cls, token_list: List[Token]):

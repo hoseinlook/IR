@@ -3,7 +3,7 @@ from pprint import pprint
 
 from preprocess import NewsData, PreProcess
 from query import Query
-from index import InvertedIndex
+from reverse_index import InvertedIndex
 
 ORIGIN_DATA = {}
 DATA_PATH = './data/news.xlsx'
@@ -37,6 +37,7 @@ def load_or_create_the_index():
 
 if __name__ == '__main__':
     load_or_create_the_index()
+    print('files was loaded')
     while True:
         index_res = Query().start()
         origin_res = [ORIGIN_DATA[i] for i in index_res]
