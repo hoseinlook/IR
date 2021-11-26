@@ -30,7 +30,6 @@ class Query:
             return []
         query_tokens = [Token(doc_id=-1, word=word, posting=i) for i, word in enumerate(list_of_words)]
         result = self.search(query_tokens)
-        print(result)
         return result
 
     def search(self, query_tokens: List[Token]) -> List[int]:
@@ -94,6 +93,9 @@ class Query:
                 doc_ids = set(self._best_search(query).keys())
                 setlist.append(doc_ids)
             new_res = set.intersection(*setlist)
+            results += new_res
+
+            new_res = set.union(*setlist)
             results += new_res
 
         return results
