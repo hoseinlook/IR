@@ -23,9 +23,11 @@ class Query:
 
     def start(self, query_text=None):
         if query_text is None:
-            query_text = input().strip().split()
+            query_text = input()
 
-        list_of_words = query_text
+        list_of_words = query_text.strip().split()
+        if len(list_of_words) == 0:
+            return []
         query_tokens = [Token(doc_id=-1, word=word, posting=i) for i, word in enumerate(list_of_words)]
         result = self.search(query_tokens)
         print(result)
@@ -37,7 +39,6 @@ class Query:
         all_results += list(self._best_search(query_tokens).keys())
 
         all_results += self._sub_search(query_tokens)
-
 
         new_res = self.unique_results_with_order(all_results)
 
