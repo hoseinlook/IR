@@ -25,10 +25,10 @@ def load_or_create_the_index():
     if os.path.isfile(SAVE_PATH):
         print('loading index from file')
         InvertedIndex.load(SAVE_PATH)
-        # news_data = NewsData(DATA_PATH)
-        # for item in news_data.iter_items():
-        #     doc_id = item['doc_id']
-        #     ORIGIN_DATA[doc_id] = item
+        news_data = NewsData(DATA_PATH)
+        for item in news_data.iter_items():
+            doc_id = item['doc_id']
+            ORIGIN_DATA[doc_id] = item
     else:
         print('creating index')
         create_index_from_file()
@@ -37,4 +37,7 @@ def load_or_create_the_index():
 
 if __name__ == '__main__':
     load_or_create_the_index()
-    Query().start()
+    while True:
+        index_res = Query().start()
+        origin_res = [ORIGIN_DATA[i] for i in index_res]
+        print()
