@@ -1,6 +1,6 @@
 import dataclasses
 import pickle
-from typing import List
+from typing import List, Set
 
 from preprocess import Token
 
@@ -19,9 +19,17 @@ class PostingsList(dict):
             self[doc_id] = Postings()
         self.get_related_postings(doc_id).append(posting)
 
+    def intersection_keys(self, other) -> Set[int]:
+        intersection_keys = set(self.keys()).intersection(set(other.keys()))
+        return intersection_keys
+
 
 class InvertedIndex:
     _index_dict = {}
+
+    @classmethod
+    def get_postings_list(cls, word) -> PostingsList:
+        return cls._index_dict.get(word)
 
     @classmethod
     def insert_doc_tokens(cls, token_list: List[Token]):
@@ -50,8 +58,8 @@ class InvertedIndex:
 
 
 if __name__ == '__main__':
-    # InvertedIndex.insert_doc_tokens([Token(1, 1, 'mamad'), Token(2, 1, 'mamad'), Token(3, 2, 'mamad')])
-    # print(InvertedIndex())
-    # InvertedIndex.save('./data/index')
-    InvertedIndex.load('./data/index')
+    InvertedIndex.insert_doc_tokens([Token(1, 1, 'ممد‌اینستا'), ])
     print(InvertedIndex())
+    # InvertedIndex.save('./data/index')
+    # InvertedIndex.load('./data/index')
+    # print(InvertedIndex())

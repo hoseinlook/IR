@@ -49,8 +49,8 @@ class PreProcess:
         token_list = word_tokenize(text)
         token_list = [Token(doc_id=doc_id, posting=i, word=word) for i, word in enumerate(token_list)]
 
-        token_list = self._remove_stopwords(token_list)
-        token_list = self._stem(token_list)
+        token_list = self.remove_stopwords(token_list)
+        token_list = self.stem(token_list)
 
         return token_list
 
@@ -73,14 +73,14 @@ class PreProcess:
 
         return txt
 
-    def _stem(self, token_list: List[Token]) -> List[Token]:
+    def stem(self, token_list: List[Token]) -> List[Token]:
         for i, token in enumerate(deepcopy(token_list)):
             token_list[i].word = self.stemmer.convert_to_stem(token.word)
             # token_list[i].word = self.lemmatizer.lemmatize(token.word)
 
         return token_list
 
-    def _remove_stopwords(self, token_list: List[Token]) -> List[Token]:
+    def remove_stopwords(self, token_list: List[Token]) -> List[Token]:
         for token in deepcopy(token_list):
             if token.word in self.stopwords or len(token.word) <= 1:
                 token_list.remove(token)

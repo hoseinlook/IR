@@ -1,6 +1,8 @@
 import os.path
+from pprint import pprint
 
 from preprocess import NewsData, PreProcess
+from query import Query
 from reverse_index import InvertedIndex
 
 ORIGIN_DATA = {}
@@ -21,18 +23,18 @@ def create_index_from_file():
 
 def load_or_create_the_index():
     if os.path.isfile(SAVE_PATH):
-        print('yes')
+        print('loading index from file')
         InvertedIndex.load(SAVE_PATH)
-        news_data = NewsData(DATA_PATH)
-        for item in news_data.iter_items():
-            doc_id = item['doc_id']
-            ORIGIN_DATA[doc_id] = item
+        # news_data = NewsData(DATA_PATH)
+        # for item in news_data.iter_items():
+        #     doc_id = item['doc_id']
+        #     ORIGIN_DATA[doc_id] = item
     else:
-        print('No')
+        print('creating index')
         create_index_from_file()
         InvertedIndex.save(SAVE_PATH)
 
 
 if __name__ == '__main__':
     load_or_create_the_index()
-    print(InvertedIndex()._index_dict['قطعه'])
+    Query().start()
