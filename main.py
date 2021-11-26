@@ -3,7 +3,7 @@ from pprint import pprint
 
 from preprocess import NewsData, PreProcess
 from query import Query
-from reverse_index import InvertedIndex
+from index import InvertedIndex
 
 ORIGIN_DATA = {}
 DATA_PATH = './data/news.xlsx'
