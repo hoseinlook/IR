@@ -1,63 +1,43 @@
 import dataclasses
-from copy import deepcopy
 from typing import List
 
-from hazm import word_tokenize, stopwords_list, Stemmer, Lemmatizer
+from preprocess import Token
 
 
-@dataclasses.dataclass
-class Postings:
-    doc_id: int
-    postings: list
-
-    @property
-    def count(self) -> int:
-        return len(self.postings)
+class Postings(list):
+    pass
 
 
-@dataclasses.dataclass
-class Token:
-    posting: int
-    doc_id: int
-    word: str
+class PostingsList(dict):
+
+    def get_related_postings(self, doc_id: int) -> Postings:
+        return self.get(doc_id)
+
+    def insert_a_post(self, doc_id, posting):
+        if self.get_related_postings(doc_id) is None:
+            self[doc_id] = Postings()
+        self.get_related_postings(doc_id).append(posting)
+
+
+class InvertedIndex:
+    _index_dict = {}
+
+    @classmethod
+    def insert_doc_tokens(cls, token_list: List[Token]):
+        for token in token_list:
+            if token.word not in cls._index_dict:
+                cls._index_dict[token.word] = item = PostingsList()
+                item.insert_a_post(doc_id=token.doc_id, posting=token.posting)
+            else:
+                cls._index_dict[token.word].insert_a_post(doc_id=token.doc_id, posting=token.posting)
+
+    def __str__(self):
+        return str(self._index_dict)
 
     def __repr__(self):
-        return f'{self.doc_id}:{self.posting}:{self.word}'
-
-
-class PreProcess:
-
-    def __init__(self):
-        self.stemmer = Stemmer()
-        self.lemmatizer = Lemmatizer()
-        self.stopwords = stopwords_list()
-
-    def start(self, text, doc_id):
-        token_list = word_tokenize(text)
-        token_list = [Token(doc_id=doc_id, posting=i, word=word) for i, word in enumerate(token_list)]
-        print(token_list)
-        token_list = self._normalization(token_list)
-        print(token_list)
-        token_list = self._remove_stopwords(token_list)
-        print(token_list)
-
-        return token_list
-
-    def _normalization(self, token_list: List[Token]):
-        for i, token in enumerate(token_list):
-            token_list[i].word = self.stemmer.stem(token.word)
-            # token_list[i].word = self.lemmatizer.lemmatize(token.word)
-
-        return token_list
-
-    def _remove_stopwords(self, token_list: List[Token]):
-        for token in token_list:
-            if token.word in self.stopwords:
-                token_list.remove(token)
-        return token_list
+        return self.__str__()
 
 
 if __name__ == '__main__':
-    x = PreProcess().start('واکنش مرتضی حیدری به شوخی‌های فضای مجازی با سوالاتش', doc_id=2)
-    print(x)
-    # print(stopwords_list())
+    InvertedIndex.insert_doc_tokens([Token(1, 1, 'mamad'),Token(2, 1, 'mamad'),Token(3, 2, 'mamad')])
+    print(InvertedIndex())
