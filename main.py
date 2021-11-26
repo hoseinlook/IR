@@ -41,4 +41,5 @@ if __name__ == '__main__':
     while True:
         index_res = Query().start()
         origin_res = [ORIGIN_DATA[i] for i in index_res]
-        print()
+        print([i['title']for i in origin_res])
+        
