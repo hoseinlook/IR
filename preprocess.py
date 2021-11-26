@@ -1,8 +1,13 @@
 import dataclasses
+import re
 from copy import deepcopy
 from typing import List, Iterator
 import pandas as pd
 from hazm import word_tokenize, stopwords_list, Stemmer, Lemmatizer
+from parsivar import FindStems, Normalizer
+
+bad_chars = ['/', '//', '\\', '\/', '@', '$', '%', '^', '&', '&', '*', '(', ')', '[', ']', '!', '#',
+             '{', '}', '(', ')', '~', '!', '+', ',', '=']
 
 
 class NewsData:
@@ -11,7 +16,7 @@ class NewsData:
 
     def iter_items(self) -> Iterator[dict]:
         df = pd.read_excel(self.path)
-        doc_id =0
+        doc_id = 0
         for row in df.iterrows():
             yield {
                 'content': row[1]['content'],
@@ -19,7 +24,7 @@ class NewsData:
                 'url': row[1]['url'],
                 'doc_id': doc_id,
             }
-            doc_id+=1
+            doc_id += 1
 
 
 @dataclasses.dataclass
@@ -35,38 +40,56 @@ class Token:
 class PreProcess:
 
     def __init__(self):
-        self.stemmer = Stemmer()
+        self.stemmer = FindStems()
         self.lemmatizer = Lemmatizer()
         self.stopwords = stopwords_list()
 
-    def start(self, text, doc_id):
+    def start(self, text, doc_id) -> List[Token]:
+        text = self._normalize_text(text)
         token_list = word_tokenize(text)
         token_list = [Token(doc_id=doc_id, posting=i, word=word) for i, word in enumerate(token_list)]
-        print(token_list)
-        token_list = self._normalization(token_list)
-        print(token_list)
+
         token_list = self._remove_stopwords(token_list)
-        print(token_list)
+        token_list = self._stem(token_list)
 
         return token_list
 
-    def _normalization(self, token_list: List[Token]):
-        for i, token in enumerate(token_list):
-            token_list[i].word = self.stemmer.stem(token.word)
+    @staticmethod
+    def remove_punctuations(text):
+        text = re.sub(r'[:;?!-_.,/()،؛~% \\ »«٪”…<>؟$《 》═=&|”“′‘ # @ \+ \* \^ \" \' \{ \}  ]', ' ', text)
+        return text
+
+    @staticmethod
+    def remove_links(text):
+        text = re.sub(r'(https?|t\.me|www\.)(\S+)\s?', '', text, flags=re.MULTILINE | re.IGNORECASE)
+        return text
+
+    def _normalize_text(self, txt: str):
+        my_normalizer = Normalizer(statistical_space_correction=True)
+        txt = my_normalizer.normalize(txt)
+
+        txt = self.remove_links(txt)
+        txt = self.remove_punctuations(txt)
+
+        return txt
+
+    def _stem(self, token_list: List[Token]) -> List[Token]:
+        for i, token in enumerate(deepcopy(token_list)):
+            token_list[i].word = self.stemmer.convert_to_stem(token.word)
             # token_list[i].word = self.lemmatizer.lemmatize(token.word)
 
         return token_list
 
-    def _remove_stopwords(self, token_list: List[Token]):
-        for token in token_list:
-            if token.word in self.stopwords:
+    def _remove_stopwords(self, token_list: List[Token]) -> List[Token]:
+        for token in deepcopy(token_list):
+            if token.word in self.stopwords or len(token.word) <= 1:
                 token_list.remove(token)
+
         return token_list
 
 
 if __name__ == '__main__':
-    x = PreProcess().start('واکنش مرتضی حیدری به شوخی‌های فضای مجازی با سوالاتش', doc_id=2)
+    text = 'سلام'
+    x = PreProcess().start(text, doc_id=2)
 
-    for item in NewsData('./data/news.xlsx').iter_items():
-        print(item)
-        break
+    print(x)
