@@ -14,17 +14,25 @@ def create_index_from_file():
     for item in news_data.iter_items():
         doc_id = item['doc_id']
         ORIGIN_DATA[doc_id] = item
-        text = item['title'] + ' ' + item['content']
+        text = item['content']
         token_list = prepro.start(doc_id=doc_id, text=text)
         InvertedIndex.insert_doc_tokens(token_list)
 
 
-if __name__ == '__main__':
+def load_or_create_the_index():
     if os.path.isfile(SAVE_PATH):
         print('yes')
         InvertedIndex.load(SAVE_PATH)
-        print(InvertedIndex()._index_dict['بازیکن'])
+        news_data = NewsData(DATA_PATH)
+        for item in news_data.iter_items():
+            doc_id = item['doc_id']
+            ORIGIN_DATA[doc_id] = item
     else:
         print('No')
         create_index_from_file()
         InvertedIndex.save(SAVE_PATH)
+
+
+if __name__ == '__main__':
+    load_or_create_the_index()
+    print(InvertedIndex()._index_dict['قطعه'])
