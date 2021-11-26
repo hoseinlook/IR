@@ -1,4 +1,5 @@
 import dataclasses
+import pickle
 from typing import List
 
 from preprocess import Token
@@ -31,6 +32,16 @@ class InvertedIndex:
             else:
                 cls._index_dict[token.word].insert_a_post(doc_id=token.doc_id, posting=token.posting)
 
+    @classmethod
+    def save(cls, to_path):
+        with open(to_path, 'wb') as handle:
+            pickle.dump(cls._index_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    @classmethod
+    def load(cls, from_path):
+        with open(from_path, 'rb') as handle:
+            cls._index_dict = pickle.load(handle)
+
     def __str__(self):
         return str(self._index_dict)
 
@@ -39,5 +50,8 @@ class InvertedIndex:
 
 
 if __name__ == '__main__':
-    InvertedIndex.insert_doc_tokens([Token(1, 1, 'mamad'),Token(2, 1, 'mamad'),Token(3, 2, 'mamad')])
+    # InvertedIndex.insert_doc_tokens([Token(1, 1, 'mamad'), Token(2, 1, 'mamad'), Token(3, 2, 'mamad')])
+    # print(InvertedIndex())
+    # InvertedIndex.save('./data/index')
+    InvertedIndex.load('./data/index')
     print(InvertedIndex())
