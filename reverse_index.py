@@ -32,6 +32,12 @@ class InvertedIndex:
     _index_dict = {}
 
     @classmethod
+    def get_counts(cls):
+        return {
+            i: value.count_all for i, value in cls._index_dict.items()
+        }
+
+    @classmethod
     def get_postings_list(cls, word) -> PostingsList:
         item = cls._index_dict.get(word)
         return item if item is not None else PostingsList()
