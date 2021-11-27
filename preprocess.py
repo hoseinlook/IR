@@ -1,13 +1,37 @@
 import dataclasses
+import pickle
 import re
 from copy import deepcopy
 from typing import List, Iterator
+
 import pandas as pd
-from hazm import word_tokenize, stopwords_list, Stemmer, Lemmatizer
+from hazm import word_tokenize, stopwords_list, Lemmatizer
 from parsivar import FindStems, Normalizer
 
 bad_chars = ['/', '//', '\\', '\/', '@', '$', '%', '^', '&', '&', '*', '(', ')', '[', ']', '!', '#',
              '{', '}', '(', ')', '~', '!', '+', ',', '=']
+
+
+class Statistic:
+    @dataclasses.dataclass
+    class Item:
+        tokens_before_stem: int
+        tokens_after_stem: int
+        vocab_size: int
+
+    items = {
+
+    }
+
+    @classmethod
+    def save(cls, to_path):
+        with open(to_path, 'wb') as handle:
+            pickle.dump(cls.items, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    @classmethod
+    def load(cls, from_path):
+        with open(from_path, 'rb') as handle:
+            cls.items = pickle.load(handle)
 
 
 class NewsData:
@@ -38,6 +62,8 @@ class Token:
 
 
 class PreProcess:
+    all_tokens_count = 0
+    all_tokens_after_stem_count = 0
 
     def __init__(self):
         self.stemmer = FindStems()
@@ -50,7 +76,9 @@ class PreProcess:
         token_list = [Token(doc_id=doc_id, posting=i, word=word) for i, word in enumerate(token_list)]
 
         token_list = self.remove_stopwords(token_list)
+        PreProcess.all_tokens_count += len(token_list)
         token_list = self.stem(token_list)
+        PreProcess.all_tokens_after_stem_count += len(token_list)
 
         return token_list
 

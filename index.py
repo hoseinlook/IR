@@ -1,4 +1,3 @@
-import dataclasses
 import pickle
 from typing import List, Set
 
@@ -30,6 +29,10 @@ class PostingsList(dict):
 
 class InvertedIndex:
     _index_dict = {}
+
+    @property
+    def vocab_size(cls) -> int:
+        return len(cls._index_dict.keys())
 
     @classmethod
     def get_counts(cls):

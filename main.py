@@ -1,13 +1,13 @@
 import os.path
-from pprint import pprint
 
-from preprocess import NewsData, PreProcess
-from query import Query
 from index import InvertedIndex
+from preprocess import NewsData, PreProcess, Statistic
+from query import Query
 
 ORIGIN_DATA = {}
 DATA_PATH = './data/news.xlsx'
 SAVE_PATH = './data/index'
+STATISTIC_PATH = './data/statistic'
 
 
 def create_index_from_file():
@@ -17,14 +17,21 @@ def create_index_from_file():
         doc_id = item['doc_id']
         ORIGIN_DATA[doc_id] = item
         text = item['content']
+        if doc_id + 1 % 5000 == 0:
+            Statistic.items[doc_id + 1] = Statistic.Item(tokens_before_stem=PreProcess.all_tokens_count,
+                                                         tokens_after_stem=PreProcess.all_tokens_after_stem_count,
+                                                         vocab_size=InvertedIndex().vocab_size)
         token_list = prepro.start(doc_id=doc_id, text=text)
         InvertedIndex.insert_doc_tokens(token_list)
+
+    Statistic.save(STATISTIC_PATH)
 
 
 def load_or_create_the_index():
     if os.path.isfile(SAVE_PATH):
         print('loading index from file')
         InvertedIndex.load(SAVE_PATH)
+        Statistic.load(STATISTIC_PATH)
         news_data = NewsData(DATA_PATH)
         for item in news_data.iter_items():
             doc_id = item['doc_id']
@@ -41,5 +48,4 @@ if __name__ == '__main__':
     while True:
         index_res = Query().best_search()
         origin_res = [ORIGIN_DATA[i] for i in index_res]
-        print([i['title']for i in origin_res])
-
+        print([i['title'] for i in origin_res])
