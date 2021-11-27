@@ -23,6 +23,10 @@ class PostingsList(dict):
         intersection_keys = set(self.keys()).intersection(set(other.keys()))
         return intersection_keys
 
+    @property
+    def count_all(self):
+        return sum([len(i) for i in self.values()])
+
 
 class InvertedIndex:
     _index_dict = {}
