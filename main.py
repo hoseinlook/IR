@@ -17,9 +17,9 @@ def create_index_from_file():
         doc_id = item['doc_id']
         ORIGIN_DATA[doc_id] = item
         text = item['content']
-        if doc_id + 1 % 5000 == 0:
-            Statistic.items[doc_id + 1] = Statistic.Item(tokens_before_stem=PreProcess.all_tokens_count,
-                                                         tokens_after_stem=PreProcess.all_tokens_after_stem_count,
+        if (doc_id + 1) % 500 == 0:
+            print('yes')
+            Statistic.items[doc_id + 1] = Statistic.Item(tokens=PreProcess.all_tokens_count,
                                                          vocab_size=InvertedIndex().vocab_size)
         token_list = prepro.start(doc_id=doc_id, text=text)
         InvertedIndex.insert_doc_tokens(token_list)
@@ -45,6 +45,7 @@ def load_or_create_the_index():
 if __name__ == '__main__':
     load_or_create_the_index()
     print('files was loaded')
+    print(Statistic.items)
     while True:
         index_res = Query().best_search()
         origin_res = [ORIGIN_DATA[i] for i in index_res]

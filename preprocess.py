@@ -15,8 +15,7 @@ bad_chars = ['/', '//', '\\', '\/', '@', '$', '%', '^', '&', '&', '*', '(', ')',
 class Statistic:
     @dataclasses.dataclass
     class Item:
-        tokens_before_stem: int
-        tokens_after_stem: int
+        tokens: int
         vocab_size: int
 
     items = {
@@ -63,7 +62,6 @@ class Token:
 
 class PreProcess:
     all_tokens_count = 0
-    all_tokens_after_stem_count = 0
 
     def __init__(self):
         self.stemmer = FindStems()
@@ -76,9 +74,8 @@ class PreProcess:
         token_list = [Token(doc_id=doc_id, posting=i, word=word) for i, word in enumerate(token_list)]
 
         token_list = self.remove_stopwords(token_list)
-        PreProcess.all_tokens_count += len(token_list)
         token_list = self.stem(token_list)
-        PreProcess.all_tokens_after_stem_count += len(token_list)
+        PreProcess.all_tokens_count += len(token_list)
 
         return token_list
 
