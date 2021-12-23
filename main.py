@@ -1,8 +1,8 @@
 import os.path
 
-from index import InvertedIndex
+from index import InvertedIndex, TFIndex
 from preprocess import NewsData, PreProcess, Statistic
-from query import Query
+from query import Query, IndexEliminateQuery
 
 ORIGIN_DATA = {}
 DATA_PATH = './data/news.xlsx'
@@ -27,7 +27,7 @@ def create_index_from_file():
     Statistic.save(STATISTIC_PATH)
 
 
-def load_or_create_the_index():
+def load_or_create_the_inverted_index():
     if os.path.isfile(SAVE_PATH):
         print('loading index from file')
         InvertedIndex.load(SAVE_PATH)
@@ -43,10 +43,11 @@ def load_or_create_the_index():
 
 
 if __name__ == '__main__':
-    load_or_create_the_index()
+    load_or_create_the_inverted_index()
+    TFIndex.initialize()
     print('files was loaded')
-    # print(Statistic.items)
     while True:
-        index_res = Query().best_search()
-        origin_res = [ORIGIN_DATA[i] for i in index_res]
-        print([i['title'] for i in origin_res])
+
+        print(IndexEliminateQuery().get_result())
+    # print(Statistic.items)
+

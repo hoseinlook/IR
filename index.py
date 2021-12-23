@@ -82,6 +82,10 @@ class TFIndex:
     _N = 0
 
     @classmethod
+    def get_weight(cls, doc_id, term):
+        return cls._weight_dict[doc_id][term] if cls._weight_dict[doc_id].get(term) is not None else 0
+
+    @classmethod
     def initialize(cls):
         cls.load_index_from_inverted_index()
         cls.calculate_weights()
@@ -103,17 +107,16 @@ class TFIndex:
 
     @classmethod
     def calculate_weights(cls, normalize=True):
-        cls._weight_dict={}
+        cls._weight_dict = {}
         doc_count = cls._N
         tf = lambda term_freq: math.log(term_freq) + 1
-        df = lambda term: doc_count / len(InvertedIndex.get_postings_list(term))
 
         for doc_id in cls._index_dict.keys():
             term_list = cls._index_dict[doc_id]
             for term, term_freq in term_list.items():
                 if doc_id not in cls._weight_dict:
-                    cls._weight_dict[doc_id]={}
-                cls._weight_dict[doc_id][term] = tf(term_freq) * df(term)
+                    cls._weight_dict[doc_id] = {}
+                cls._weight_dict[doc_id][term] = tf(term_freq)
 
         if normalize:
             cls._normalize()

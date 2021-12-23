@@ -2,8 +2,8 @@ import itertools
 from copy import deepcopy
 from typing import List
 import math
-from preprocess import Token
-from index import InvertedIndex, PostingsList, Postings
+from preprocess import Token, PreProcess
+from index import InvertedIndex, PostingsList, Postings, TFIndex
 
 
 def iter_sub_array(arr, size):
@@ -12,8 +12,6 @@ def iter_sub_array(arr, size):
         for j in range(i, n):
             if len(arr[i:j + 1]) == size:
                 yield arr[i:j + 1]
-
-
 
 
 class Query:
@@ -102,3 +100,66 @@ class Query:
         query_tokens: List[Token]
 
         return list(self._complete_combination_search(query_tokens).keys())
+
+
+class IndexEliminateQuery:
+
+    def __init__(self, query=None):
+        if query is None:
+            query = input().strip()
+        self.query = query
+
+    def get_result(self):
+        token_list = list(set(self.preprocess_query()))
+        token_weight_dict = self.calculate_weights(token_list)
+        token_weight_dict = self.normalize(token_weight_dict)
+
+        scores_list = []
+        related_doc_id_list = self.get_related_doc_id_list(token_list)
+
+        for doc_id in related_doc_id_list:
+            s = 0
+            for token in token_weight_dict.keys():
+                term = token.word
+                s += TFIndex.get_weight(doc_id, term) * token_weight_dict[token]
+            scores_list.append((doc_id, s))
+
+        scores_list.sort(key=lambda x: x[1], reverse=True)
+        print(scores_list)
+        return [i[0] for i in scores_list]
+
+    def calculate_weights(self, token_list):
+        doc_count = TFIndex()._N
+        df = lambda term: doc_count / len(InvertedIndex.get_postings_list(term))
+        tf = lambda term_freq: math.log(term_freq) + 1
+        token_weight_dict = {}
+        for token in set(token_list):
+            wt_q = tf(token_list.count(token)) * df(term=token.word)
+            token_weight_dict[token] = wt_q
+
+        return token_weight_dict
+
+    def preprocess_query(self) -> List[Token]:
+        return PreProcess().start(self.query, 1)
+
+    def _calculate_weight(self, token: Token, token_list: List[Token]):
+        return
+
+    def normalize(self, token_weight_dict):
+        sum = 0
+        for value in token_weight_dict.values():
+            sum += value ** 2
+        norm = math.sqrt(sum)
+
+        for key in token_weight_dict.keys():
+            token_weight_dict[key] = token_weight_dict[key] / norm
+
+        return token_weight_dict
+
+    def get_related_doc_id_list(self, token_list):
+        doc_set = set()
+        for token in token_list:
+            term = token.word
+            doc_set=doc_set.union(set(InvertedIndex.get_postings_list(term)))
+
+        return list(doc_set)

@@ -59,6 +59,9 @@ class Token:
     def __repr__(self):
         return f'{self.doc_id}:{self.posting}:{self.word}'
 
+    def __hash__(self):
+        return hash(f'{self.posting}_{self.doc_id}_{self.word}')
+
 
 class PreProcess:
     all_tokens_count = 0

@@ -1,5 +1,5 @@
 ```python
-from main import load_or_create_the_index ,ORIGIN_DATA ,InvertedIndex
+from main import load_or_create_the_inverted_index, ORIGIN_DATA, InvertedIndex
 from query import Query
 ```
 
