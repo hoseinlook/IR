@@ -14,9 +14,6 @@ def iter_sub_array(arr, size):
                 yield arr[i:j + 1]
 
 
-# for item in iter_sub_array([1, 2, 3, 4], 1):
-#     print(item)
-# exit()
 
 
 class Query:

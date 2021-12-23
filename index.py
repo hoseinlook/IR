@@ -1,3 +1,4 @@
+import math
 import pickle
 from typing import List, Set
 
@@ -64,6 +65,10 @@ class InvertedIndex:
         with open(from_path, 'rb') as handle:
             cls._index_dict = pickle.load(handle)
 
+    def __iter__(self):
+        for item in self._index_dict.keys():
+            yield item
+
     def __str__(self):
         return str(self._index_dict)
 
@@ -71,9 +76,70 @@ class InvertedIndex:
         return self.__str__()
 
 
+class TFIndex:
+    _index_dict = None
+    _weight_dict = None
+    _N = 0
+
+    @classmethod
+    def initialize(cls):
+        cls.load_index_from_inverted_index()
+        cls.calculate_weights()
+
+    @classmethod
+    def load_index_from_inverted_index(cls):
+        if cls._index_dict is not None: return
+        cls._index_dict = {}
+        for term in InvertedIndex():
+            postings_list = InvertedIndex.get_postings_list(term)
+            for doc_id in postings_list:
+                if doc_id not in cls._index_dict:
+                    cls._index_dict[doc_id] = {}
+
+                cls._index_dict[doc_id][term] = len(postings_list.get_related_postings(doc_id))
+
+        cls._N = len(cls._index_dict.keys())
+        # cls._normalize()
+
+    @classmethod
+    def calculate_weights(cls, normalize=True):
+        cls._weight_dict={}
+        doc_count = cls._N
+        tf = lambda term_freq: math.log(term_freq) + 1
+        df = lambda term: doc_count / len(InvertedIndex.get_postings_list(term))
+
+        for doc_id in cls._index_dict.keys():
+            term_list = cls._index_dict[doc_id]
+            for term, term_freq in term_list.items():
+                if doc_id not in cls._weight_dict:
+                    cls._weight_dict[doc_id]={}
+                cls._weight_dict[doc_id][term] = tf(term_freq) * df(term)
+
+        if normalize:
+            cls._normalize()
+
+    @classmethod
+    def _normalize(cls):
+        for doc_id in cls._weight_dict.keys():
+            sum = 0
+            doc__dict = cls._weight_dict[doc_id]
+            for value in doc__dict.values():
+                sum += value ** 2
+            norm = math.sqrt(sum)
+            for key in doc__dict.keys():
+                doc__dict[key] = doc__dict[key] / norm
+
+    def __str__(self):
+        return str(self._index_dict)
+
+
 if __name__ == '__main__':
-    InvertedIndex.insert_doc_tokens([Token(1, 1, 'ممد‌اینستا'), ])
-    print(InvertedIndex())
+    InvertedIndex.load('./data/index')
+    # InvertedIndex.insert_doc_tokens([Token(1, 1, 'xx'), ])
+    # InvertedIndex.insert_doc_tokens([Token(2, 1, 'xx'), ])
+    # InvertedIndex.insert_doc_tokens([Token(3, 2, 'xx'), ])
+    TFIndex().initialize()
+    print(TFIndex())
     # InvertedIndex.save('./data/index')
     # InvertedIndex.load('./data/index')
     # print(InvertedIndex())
