@@ -60,7 +60,7 @@ class Token:
         return f'{self.doc_id}:{self.posting}:{self.word}'
 
     def __hash__(self):
-        return hash(f'{self.posting}_{self.doc_id}_{self.word}')
+        return hash(f'{self.word}')
 
 
 class PreProcess:

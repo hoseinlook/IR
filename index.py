@@ -82,6 +82,10 @@ class TFIndex:
     _N = 0
 
     @classmethod
+    def doc_id_size(cls, doc_id):
+        return len(cls._index_dict[doc_id].keys())
+
+    @classmethod
     def get_weight(cls, doc_id, term):
         return cls._weight_dict[doc_id][term] if cls._weight_dict[doc_id].get(term) is not None else 0
 
@@ -136,13 +140,38 @@ class TFIndex:
         return str(self._index_dict)
 
 
+class KChampionsList:
+    _k_related_list = {}
+
+    @classmethod
+    def get(cls, key) -> list:
+        return cls._k_related_list.get(key, [])
+
+    def __init__(self, k=10):
+        self.k = k
+
+    def initialize(self):
+        for term in InvertedIndex():
+            doc_list = []
+            for doc_id in InvertedIndex.get_postings_list(term):
+                doc_weight = TFIndex.get_weight(doc_id, term)
+
+                doc_list.append((doc_id, doc_weight))
+
+            doc_list.sort(key=lambda x: x[1], reverse=True)
+
+            self._k_related_list[term] = [i[0] for i in doc_list][:self.k]
+
+
 if __name__ == '__main__':
     InvertedIndex.load('./data/index')
     # InvertedIndex.insert_doc_tokens([Token(1, 1, 'xx'), ])
     # InvertedIndex.insert_doc_tokens([Token(2, 1, 'xx'), ])
     # InvertedIndex.insert_doc_tokens([Token(3, 2, 'xx'), ])
     TFIndex().initialize()
-    print(TFIndex())
+    # print(TFIndex())
+    KChampionsList().initialize()
+    print('DOne')
     # InvertedIndex.save('./data/index')
     # InvertedIndex.load('./data/index')
     # print(InvertedIndex())

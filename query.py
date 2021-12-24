@@ -3,7 +3,7 @@ from copy import deepcopy
 from typing import List
 import math
 from preprocess import Token, PreProcess
-from index import InvertedIndex, PostingsList, Postings, TFIndex
+from index import InvertedIndex, PostingsList, Postings, TFIndex, KChampionsList
 
 
 def iter_sub_array(arr, size):
@@ -119,10 +119,11 @@ class IndexEliminateQuery:
 
         for doc_id in related_doc_id_list:
             s = 0
+            doc_size = TFIndex.doc_id_size(doc_id)
             for token in token_weight_dict.keys():
                 term = token.word
                 s += TFIndex.get_weight(doc_id, term) * token_weight_dict[token]
-            scores_list.append((doc_id, s))
+            scores_list.append((doc_id, s / doc_size))
 
         scores_list.sort(key=lambda x: x[1], reverse=True)
         print(scores_list)
@@ -160,6 +161,17 @@ class IndexEliminateQuery:
         doc_set = set()
         for token in token_list:
             term = token.word
-            doc_set=doc_set.union(set(InvertedIndex.get_postings_list(term)))
+            doc_set = doc_set.union(set(InvertedIndex.get_postings_list(term)))
+
+        return list(doc_set)
+
+
+class ChampionsListQuery(IndexEliminateQuery):
+
+    def get_related_doc_id_list(self, token_list):
+        doc_set = set()
+        for token in token_list:
+            term = token.word
+            doc_set = doc_set.union(set(KChampionsList.get(term)))
 
         return list(doc_set)
