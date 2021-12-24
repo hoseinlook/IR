@@ -1,8 +1,8 @@
 import os.path
 
-from index import InvertedIndex, TFIndex
+from index import InvertedIndex, TFIndex, KChampionsList
 from preprocess import NewsData, PreProcess, Statistic
-from query import Query, IndexEliminateQuery
+from query import Query, IndexEliminateQuery, ChampionsListQuery
 
 ORIGIN_DATA = {}
 DATA_PATH = './data/news.xlsx'
@@ -45,9 +45,9 @@ def load_or_create_the_inverted_index():
 if __name__ == '__main__':
     load_or_create_the_inverted_index()
     TFIndex.initialize()
+    KChampionsList(k=10).initialize()
+    ChampionsListQuery(query='asd')
     print('files was loaded')
     while True:
-
         print(IndexEliminateQuery().get_result())
     # print(Statistic.items)
-

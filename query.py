@@ -126,7 +126,6 @@ class IndexEliminateQuery:
             scores_list.append((doc_id, s / doc_size))
 
         scores_list.sort(key=lambda x: x[1], reverse=True)
-        print(scores_list)
         return [i[0] for i in scores_list]
 
     def calculate_weights(self, token_list):
@@ -175,3 +174,6 @@ class ChampionsListQuery(IndexEliminateQuery):
             doc_set = doc_set.union(set(KChampionsList.get(term)))
 
         return list(doc_set)
+
+    def get_result(self, count=10):
+        return super().get_result()[:count]
