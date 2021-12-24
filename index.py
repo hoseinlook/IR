@@ -112,7 +112,6 @@ class TFIndex:
     @classmethod
     def calculate_weights(cls, normalize=True):
         cls._weight_dict = {}
-        doc_count = cls._N
         tf = lambda term_freq: math.log(term_freq) + 1
 
         for doc_id in cls._index_dict.keys():

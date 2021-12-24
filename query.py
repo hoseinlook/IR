@@ -130,7 +130,7 @@ class IndexEliminateQuery:
 
     def calculate_weights(self, token_list):
         doc_count = TFIndex()._N
-        df = lambda term: doc_count / len(InvertedIndex.get_postings_list(term))
+        df = lambda term: math.log(doc_count / len(InvertedIndex.get_postings_list(term))) if term in InvertedIndex() else 0
         tf = lambda term_freq: math.log(term_freq) + 1
         token_weight_dict = {}
         for token in set(token_list):
@@ -142,8 +142,6 @@ class IndexEliminateQuery:
     def preprocess_query(self) -> List[Token]:
         return PreProcess().start(self.query, 1)
 
-    def _calculate_weight(self, token: Token, token_list: List[Token]):
-        return
 
     def normalize(self, token_weight_dict):
         sum = 0
