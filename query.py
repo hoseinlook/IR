@@ -1,9 +1,10 @@
-import itertools
-from copy import deepcopy
 from typing import List
 import math
+from gensim.models import Word2Vec
+import numpy as np
+
 from preprocess import Token, PreProcess
-from index import InvertedIndex, PostingsList, Postings, TFIndex, KChampionsList
+from index import InvertedIndex, PostingsList, Postings, TFIndex, KChampionsList, DocEmbedding
 
 
 def iter_sub_array(arr, size):
@@ -130,7 +131,8 @@ class IndexEliminateQuery:
 
     def calculate_weights(self, token_list):
         doc_count = TFIndex()._N
-        df = lambda term: math.log(doc_count / len(InvertedIndex.get_postings_list(term))) if term in InvertedIndex() else 0
+        df = lambda term: math.log(
+            doc_count / len(InvertedIndex.get_postings_list(term))) if term in InvertedIndex() else 0
         tf = lambda term_freq: math.log(term_freq) + 1
         token_weight_dict = {}
         for token in set(token_list):
@@ -141,7 +143,6 @@ class IndexEliminateQuery:
 
     def preprocess_query(self) -> List[Token]:
         return PreProcess().start(self.query, 1)
-
 
     def normalize(self, token_weight_dict):
         sum = 0
@@ -175,3 +176,53 @@ class ChampionsListQuery(IndexEliminateQuery):
 
     def get_result(self, count=10):
         return super().get_result()[:count]
+
+
+class W2VecModelQuery:
+
+    def __init__(self, docs_embedding: DocEmbedding, model: Word2Vec, query=None):
+        if query is None:
+            query = input().strip()
+        self.query = query
+        self.token_list = list(set(self.preprocess_query()))
+        self.docs_embedding = docs_embedding
+        self.model = model
+
+    def preprocess_query(self) -> List[Token]:
+        return PreProcess().start(self.query, 1)
+
+    def calculate_weights(self, token_list):
+        doc_count = TFIndex()._N
+        df = lambda term: math.log(
+            doc_count / len(InvertedIndex.get_postings_list(term))) if term in InvertedIndex() else 0
+        tf = lambda term_freq: math.log(term_freq) + 1
+        token_weight_dict = {}
+        for token in set(token_list):
+            wt_q = tf(token_list.count(token)) * df(term=token.word)
+            token_weight_dict[token] = wt_q
+
+        return token_weight_dict
+
+    def get_result(self, top_k=10):
+        query_vec = self.get_query_vector()
+        doc_id_score_dict = []
+        for doc_id in self.docs_embedding:
+            doc_embedding_vector = self.docs_embedding.get_doc_embedding_vector(doc_id)
+            score = DocEmbedding.calculate_similarity(query_vec, doc_embedding_vector)
+            doc_id_score_dict.append((doc_id, score))
+
+        doc_id_score_dict.sort(key=lambda x: x[1], reverse=True)
+        return [i[0] for i in doc_id_score_dict][:top_k]
+
+    def get_query_vector(self):
+        token_weight_dict = self.calculate_weights(self.token_list)
+
+        query_vector_embedding = np.zeros(300)
+        weight_sum = 0
+        for token, weight in token_weight_dict.items():
+            term = token.word
+            query_vector_embedding += self.model.wv[term] * weight if term in self.model.wv else 0
+            weight_sum += weight
+
+        query_vector_embedding /= weight_sum
+        return query_vector_embedding

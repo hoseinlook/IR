@@ -2,6 +2,11 @@ import math
 import pickle
 from typing import List, Set
 
+import self as self
+from gensim.models import Word2Vec
+import numpy as np
+from numpy import norm
+
 from preprocess import Token
 
 
@@ -81,6 +86,12 @@ class TFIndex:
     _weight_dict = None
     _N = 0
 
+    def __iter__(self):
+        yield self._weight_dict.keys()
+
+    def get_terms(self, doc_id):
+        return self._weight_dict.get(doc_id)
+
     @classmethod
     def doc_id_size(cls, doc_id):
         return len(cls._index_dict[doc_id].keys())
@@ -110,7 +121,7 @@ class TFIndex:
         # cls._normalize()
 
     @classmethod
-    def calculate_weights(cls, normalize=True):
+    def calculate_weights(cls):
         cls._weight_dict = {}
         tf = lambda term_freq: math.log(term_freq) + 1
 
@@ -121,8 +132,7 @@ class TFIndex:
                     cls._weight_dict[doc_id] = {}
                 cls._weight_dict[doc_id][term] = tf(term_freq)
 
-        if normalize:
-            cls._normalize()
+        cls._normalize()
 
     @classmethod
     def _normalize(cls):
@@ -160,6 +170,37 @@ class KChampionsList:
             doc_list.sort(key=lambda x: x[1], reverse=True)
 
             self._k_related_list[term] = [i[0] for i in doc_list][:self.k]
+
+
+class DocEmbedding:
+
+    def __init__(self, model: Word2Vec):
+        self.model = model
+        self._doc_embedding_vector_dict = {}
+
+    def get_doc_embedding_vector(self, doc_id):
+        return self._doc_embedding_vector_dict[doc_id]
+
+    def __iter__(self):
+        yield self._doc_embedding_vector_dict.keys()
+
+    @classmethod
+    def calculate_similarity(cls, doc1, doc2):
+        similarity_score = np.dot(doc1, doc2) / (norm(doc1) * norm(doc2))
+
+        return (similarity_score + 1) / 2
+
+    def initialize(self):
+        docs_embedding = self._doc_embedding_vector_dict
+        for doc_id in TFIndex():
+            doc_vector = np.zeros(300)
+            weights_sum = 0
+            for term in TFIndex().get_terms(doc_id):
+                if term in self.model.wv:
+                    weight = TFIndex.get_weight(doc_id, term)
+                    doc_vector += self.model.wv[term] * weight
+                    weights_sum += weight
+            docs_embedding[doc_id] = doc_vector / weights_sum
 
 
 if __name__ == '__main__':
