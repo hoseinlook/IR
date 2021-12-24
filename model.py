@@ -41,12 +41,24 @@ class W2VecModel:
         w2v_model.train(train_data, total_examples=w2v_model.corpus_count, epochs=20)
         end = time.time()
         print("Duration: ", end - start)
-        return w2v_model
+        self._model=  w2v_model
 
     def save_model(self):
         self._model.save(SAVE_MODEL_PATH)
 
     def load_model(self, path):
         self._model = Word2Vec.load(path)
+
+
+if __name__ == '__main__':
+    my_model = W2VecModel()
+    real_model = W2VecModel()
+    # my_model.train_model()
+    # my_model.save_model()
+    my_model.load_model(SAVE_MODEL_PATH)
+    real_model.load_model(PARSIVAR_MODEL_PATH)
+    model = my_model.get_model()
+    print((model.wv.most_similar('پرسپولیس')))
+    print((real_model.get_model().wv.most_similar('پرسپولیس')))
 
 
