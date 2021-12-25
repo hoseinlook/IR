@@ -1,8 +1,9 @@
 import os.path
 
-from index import InvertedIndex, TFIndex, KChampionsList
+from index import InvertedIndex, TFIndex, KChampionsList, DocEmbedding
+from model import W2VecModel
 from preprocess import NewsData, PreProcess, Statistic
-from query import Query, IndexEliminateQuery, ChampionsListQuery
+from query import Query, IndexEliminateQuery, ChampionsListQuery, W2VecModelQuery
 
 ORIGIN_DATA = {}
 DATA_PATH = './data/news.xlsx'
@@ -47,6 +48,13 @@ if __name__ == '__main__':
     TFIndex.initialize()
     KChampionsList(k=10).initialize()
     ChampionsListQuery(query='asd')
+    my_model = W2VecModel()
+    my_model.load_model(W2VecModel.SAVE_MODEL_PATH)
+    my_doc_embedding = DocEmbedding(my_model.get_model())
+    my_doc_embedding.initialize()
+    W2VecModelQuery(my_doc_embedding, "دانشگاه صنعتی امیرکبیر").get_result()
+
+
     print('files was loaded')
     while True:
         print(IndexEliminateQuery().get_result())

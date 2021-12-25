@@ -101,7 +101,7 @@ class Query:
         query_tokens: List[Token]
 
         results = []
-        for i in range(1, len(query_tokens)):
+        for i in range(1, len(query_tokens)+1):
             items = list(iter_sub_array(query_tokens, i))
             setlist = []
             for query in items:
