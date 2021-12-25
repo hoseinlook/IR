@@ -1,11 +1,9 @@
 import math
 import pickle
 from typing import List, Set
-
-import self as self
 from gensim.models import Word2Vec
 import numpy as np
-from numpy import norm
+from numpy.linalg import norm
 
 from preprocess import Token
 
@@ -87,10 +85,11 @@ class TFIndex:
     _N = 0
 
     def __iter__(self):
-        yield self._weight_dict.keys()
+        for item in self._weight_dict.keys():
+            yield item
 
     def get_terms(self, doc_id):
-        return self._weight_dict.get(doc_id)
+        return list(self._weight_dict.get(doc_id).keys())
 
     @classmethod
     def doc_id_size(cls, doc_id):
@@ -182,7 +181,8 @@ class DocEmbedding:
         return self._doc_embedding_vector_dict[doc_id]
 
     def __iter__(self):
-        yield self._doc_embedding_vector_dict.keys()
+        for item in self._doc_embedding_vector_dict.keys():
+            yield item
 
     @classmethod
     def calculate_similarity(cls, doc1, doc2):
@@ -211,6 +211,7 @@ if __name__ == '__main__':
     TFIndex().initialize()
     # print(TFIndex())
     KChampionsList().initialize()
+
     print('DOne')
     # InvertedIndex.save('./data/index')
     # InvertedIndex.load('./data/index')
