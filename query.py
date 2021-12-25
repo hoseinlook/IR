@@ -1,10 +1,10 @@
-from typing import List
 import math
-from gensim.models import Word2Vec
+from typing import List
+
 import numpy as np
 
+from index import InvertedIndex, PostingsList, TFIndex, KChampionsList, DocEmbedding
 from preprocess import Token, PreProcess
-from index import InvertedIndex, PostingsList, Postings, TFIndex, KChampionsList, DocEmbedding
 
 
 def iter_sub_array(arr, size):
@@ -96,6 +96,22 @@ class Query:
 
         return results
 
+    def separated_intersection_search(self):
+        query_tokens = self.query_tokens
+        query_tokens: List[Token]
+
+        results = []
+        for i in range(1, len(query_tokens)):
+            items = list(iter_sub_array(query_tokens, i))
+            setlist = []
+            for query in items:
+                doc_ids = set(self._complete_combination_search(query).keys())
+                setlist.append(doc_ids)
+            new_res = set.intersection(*setlist)
+            results += new_res
+
+        return results
+
     def best_search(self):
         query_tokens = self.query_tokens
         query_tokens: List[Token]
@@ -180,13 +196,13 @@ class ChampionsListQuery(IndexEliminateQuery):
 
 class W2VecModelQuery:
 
-    def __init__(self, docs_embedding: DocEmbedding, model: Word2Vec, query=None):
+    def __init__(self, docs_embedding: DocEmbedding, query=None):
         if query is None:
             query = input().strip()
         self.query = query
         self.token_list = list(set(self.preprocess_query()))
         self.docs_embedding = docs_embedding
-        self.model = model
+        self.model = docs_embedding.model
 
     def preprocess_query(self) -> List[Token]:
         return PreProcess().start(self.query, 1)
