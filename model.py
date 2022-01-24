@@ -1,6 +1,8 @@
 import ast
 import json
 import multiprocessing
+
+from configs import ABSOLUTE_DATA_PATH
 from preprocess import PreProcess, NewsData
 import time
 from gensim.models import Word2Vec
@@ -9,9 +11,9 @@ cores = multiprocessing.cpu_count()
 
 
 class W2VecModel:
-    DATA_PATH = './data/news.xlsx'
-    SAVE_MODEL_PATH = './data/my_w2v.model'
-    PARSIVAR_MODEL_PATH = './data/w2v_150k_parsivar_300.model'
+    DATA_PATH = f'{str(ABSOLUTE_DATA_PATH)}/news.xlsx'
+    SAVE_MODEL_PATH = f'{str(ABSOLUTE_DATA_PATH)}/my_w2v.model'
+    PARSIVAR_MODEL_PATH = f'{str(ABSOLUTE_DATA_PATH)}/w2v_150k_parsivar_300.model'
 
     @classmethod
     def create_list_of_tokens(cls):
@@ -59,4 +61,4 @@ if __name__ == '__main__':
     real_model.load_model(W2VecModel.PARSIVAR_MODEL_PATH)
     model = my_model.get_model()
     print((model.wv.most_similar('پرسپولیس')))
-    print((real_model.get_model().wv.most_similar('پرسپولیس')))
+    print((real_model.get_model().wv.get_vector('پرسپولیس')))
