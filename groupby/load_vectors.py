@@ -15,7 +15,7 @@ from model import W2VecModel
 real_model = W2VecModel()
 real_model.load_model(W2VecModel.PARSIVAR_MODEL_PATH)
 MODEL = real_model.get_model()
-cos_similarity = lambda x, y: abs(dot(x, y) / (norm(x) * norm(y)))
+cos_similarity = lambda x, y: ((dot(x, y) / (norm(x) * norm(y)))+1)/2
 euclidean_dist = lambda point1, point2: np.linalg.norm(point1 - point2)
 
 
