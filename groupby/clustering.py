@@ -128,3 +128,18 @@ class KMeansIndex:
 
         return [i[0] for i in results][:count], [i[1] for i in results][:count]
 
+
+def find_rss_statistics():
+    k_list = []
+    score_list = []
+
+    for k in range(2, 50):
+        score = 0
+        center_list: List[CalKMeans.Center] = CalKMeans().cluster_on_50k_data(k=k)
+        for center in center_list:
+            for node in center.registered_vector_list:
+                score += cos_similarity(node['vector'], center.vector)
+        score_list.append(score)
+        k_list.append(k)
+
+    return k_list, score_list
