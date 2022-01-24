@@ -5,7 +5,7 @@ from typing import List
 from numpy import ndarray
 
 from configs import ABSOLUTE_DATA_PATH
-from groupby.load_vectors import TOPICS, iter_files_contents, vectorized_list, cos_similarity
+from groupby.load_vectors import TOPICS, iter_files_contents, vectorized_list, cos_similarity, cal_vector, MODEL
 
 
 class CalKMeans:
@@ -93,7 +93,6 @@ class KMeansIndex:
         self.CLUSTERED_DATA = {i: [] for i in self.centers}
         self._calculate_kmeans()
         self.save()
-        return self
 
     def _calculate_kmeans(self):
         print("START")
@@ -118,7 +117,14 @@ class KMeansIndex:
                 kmean.CLUSTERED_DATA = pickle.load(classifier_file)
         return kmean
 
+    def query(self, text_query: str, count):
+        vector = cal_vector(MODEL, text_query)
 
-# KMeansIndex().init()
-kmean = KMeansIndex.load()
-print()
+        best_center = max(self.CLUSTERED_DATA.keys(), key=lambda x: cos_similarity(x.vector, vector))
+
+        results = [(i, cos_similarity(vector, i['vector'])) for i in self.CLUSTERED_DATA[best_center]]
+
+        results.sort(key=lambda x: x[1], reverse=True)
+
+        return [i[0] for i in results][:count], [i[1] for i in results][:count]
+
