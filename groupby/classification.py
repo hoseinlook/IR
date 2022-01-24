@@ -92,8 +92,3 @@ class KNN:
         result.sort(key=lambda x: x[1], reverse=True)
 
         return [i[0] for i in result[:count]], [i[1] for i in result[:count]]
-
-
-knn = KNN().load()
-
-print(knn.query('امیرکبیر', cat="sport", count=10))
