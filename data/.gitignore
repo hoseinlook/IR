@@ -1,3 +1,12 @@
 *
 !.gitignore
 !news.xlsx.example
+!groupby_data/
+groupby_data/*
+
+!kmeans_index/
+kmeans_index/*
+
+
+!knn_index/
+knn_index/*
